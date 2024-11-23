@@ -50,6 +50,7 @@ function App() {
         {post.map(post => {
           return (
             <Post
+              key={post.id}
               author={post.author} // passando os objetos como props, e do meu componente eu puxo as propriedade dele
               content={post.content}
               publishedAt={post.publishedAt}

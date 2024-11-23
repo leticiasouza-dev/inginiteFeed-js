@@ -4,10 +4,15 @@ import ptBR from 'date-fns/locale/pt-BR'
 import styles from './Post.module.css'
 import { Comment } from '../Comment/Comment'
 import { Avatar } from '../Avatar/Avatar'
+import { useState } from 'react'
 
 export function Post({author, publishedAt, content}){
 
-    const publishedDataFormatted = format(publishedAt, "d 'de' LLLL 'ás' HH:mm'h'", {
+    const [comments, setComments] = useState(["post muito legal"]);
+
+    const [newCommentText, setNewCommentText] = useState('');
+
+    const publishedDataFormatted = format(publishedAt, "d 'de' LLLL 'ás' HH:mm'h'", { // manipulando datas
         locale: ptBR,
     })
 
@@ -15,6 +20,26 @@ export function Post({author, publishedAt, content}){
         locale: ptBR,
         addSuffix: true,
     })
+
+    function handleCreateMNewComment(event){
+        event.preventDefault()
+
+        setComments([...comments, newCommentText ]) // pegando todos os comentários existentes e adicionando mais um
+        setNewCommentText('')
+        
+    }   
+
+    function handleNewCommentChange() {
+        setNewCommentText(event.target.value)
+    }
+
+    function deleteComment(commentToDelete){
+        const commenstWithoutDeleteOne = comments.filter(comment => {
+            return comment !== commentToDelete // menter na lista somente os comentários que são diferentes do qual eu quero deletar
+        })
+
+        setComments(commenstWithoutDeleteOne); // removendo aquele comentário 
+    }
 
     return(
         <article className={styles.post}>
@@ -35,18 +60,21 @@ export function Post({author, publishedAt, content}){
                 <div className={styles.content}>
                     {content.map(line => {
                         if(line.type === 'paragraph'){
-                            return <p>{line.content}</p>
+                            return <p key={line.content}>{line.content}</p>
                         } else if (line.type === 'link'){
-                            return <p><a>{line.content}</a></p>
+                            return <p key={line.content}><a>{line.content}</a></p>
                         }
                     })}
                 </div>
             
 
-                <form className={styles.commentForm}>
+                <form onSubmit={handleCreateMNewComment} className={styles.commentForm}>
                     <strong>Deixe seu feedback</strong>
 
                     <textarea 
+                        name='comment'
+                        onChange={handleNewCommentChange}
+                        value={newCommentText}
                         placeholder='Deixe um comentário'
                     />
 
@@ -57,9 +85,14 @@ export function Post({author, publishedAt, content}){
                 </form>
 
                 <div className={styles.commentList}>
-                    <Comment/>
-                    <Comment/>
-                    <Comment/>
+                    {comments.map(coment => {
+                        return (
+                            <Comment 
+                                key={coment} 
+                                content={coment} 
+                                onDeleteComment={deleteComment}
+                        />)
+                    })}
                 </div>
         </article>
     )
